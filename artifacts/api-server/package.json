@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
-    "build": "echo Vercel serverless deploy",
+    "build": "mkdir -p public && echo Vercel serverless deploy",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -20,6 +20,7 @@
     "pino-http": "^10"
   },
   "devDependencies": {
+    "@vercel/node": "^5.3.24",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
