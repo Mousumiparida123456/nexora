@@ -1,3 +1,57 @@
-import app from "../src/app";
+import express, { type Express } from "express";
+import type { IncomingMessage, ServerResponse } from "http";
+import cors from "cors";
+import pino from "pino";
+import { pinoHttp } from "pino-http";
+import { HealthCheckResponse } from "@workspace/api-zod";
+
+const isProduction = process.env.NODE_ENV === "production";
+
+const logger = pino({
+  level: process.env.LOG_LEVEL ?? "info",
+  redact: [
+    "req.headers.authorization",
+    "req.headers.cookie",
+    "res.headers['set-cookie']",
+  ],
+  ...(isProduction
+    ? {}
+    : {
+        transport: {
+          target: "pino-pretty",
+          options: { colorize: true },
+        },
+      }),
+});
+
+const app: Express = express();
+
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      req(req: IncomingMessage) {
+        return {
+          id: req.id,
+          method: req.method,
+          url: req.url?.split("?")[0],
+        };
+      },
+      res(res: ServerResponse) {
+        return {
+          statusCode: res.statusCode,
+        };
+      },
+    },
+  }),
+);
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.get("/api/healthz", (_req, res) => {
+  const data = HealthCheckResponse.parse({ status: "ok" });
+  res.json(data);
+});
 
 export default app;
