@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from "express";
+import express, { type Request } from "express";
 import type { IncomingMessage, ServerResponse } from "http";
 import cors from "cors";
 import pino from "pino";
@@ -48,7 +48,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/healthz", (_req: Request, res: Response) => {
+app.get("/api/healthz", (_req: Request, res: any) => {
   res.json({ status: "ok" });
 });
 
