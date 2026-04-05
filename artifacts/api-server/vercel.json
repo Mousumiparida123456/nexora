@@ -1,9 +1,7 @@
 {
-  "outputDirectory": ".",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/index.ts"
+  "functions": {
+    "api/*.ts": {
+      "runtime": "@vercel/node"
     }
-  ]
+  }
 }
