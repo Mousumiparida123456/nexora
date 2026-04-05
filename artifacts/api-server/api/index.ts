@@ -1,9 +1,8 @@
-import express, { type Express } from "express";
+import express, { type Request, type Response } from "express";
 import type { IncomingMessage, ServerResponse } from "http";
 import cors from "cors";
 import pino from "pino";
 import { pinoHttp } from "pino-http";
-import { HealthCheckResponse } from "@workspace/api-zod";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -24,7 +23,7 @@ const logger = pino({
       }),
 });
 
-const app: Express = express();
+const app = express();
 
 app.use(
   pinoHttp({
@@ -49,9 +48,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+app.get("/api/healthz", (_req: Request, res: Response) => {
+  res.json({ status: "ok" });
 });
 
 export default app;
