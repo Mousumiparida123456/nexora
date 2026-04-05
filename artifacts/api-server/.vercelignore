@@ -1,0 +1,5 @@
+src/
+dist/
+.replit-artifact/
+.vercel-ts-test/
+node_modules/
