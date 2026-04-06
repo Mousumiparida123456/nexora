@@ -1,19 +1,12 @@
 import { motion } from "framer-motion";
 import { IndianRupee, CreditCard, PiggyBank, Activity, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const USD_TO_INR = 83;
-
-const formatINR = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
+import { useDashboard } from "@/lib/dashboard-context";
 
 const totals = {
-  income: 12450 * USD_TO_INR,
-  expenses: 7890 * USD_TO_INR,
-  savings: 4560 * USD_TO_INR,
+  income: 12450 * 83,
+  expenses: 7890 * 83,
+  savings: 4560 * 83,
 };
 
 const container = {
@@ -32,6 +25,8 @@ const item = {
 };
 
 export function SummaryCards() {
+  const { formatCurrency } = useDashboard();
+
   return (
     <motion.div 
       variants={container}
@@ -48,7 +43,7 @@ export function SummaryCards() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-50 tracking-tight">{formatINR.format(totals.income)}</div>
+            <div className="text-2xl font-bold text-slate-50 tracking-tight">{formatCurrency(totals.income)}</div>
             <p className="mt-1 flex items-center text-xs font-medium text-emerald-400">
               <TrendingUp className="mr-1 h-3 w-3" />
               +8.2% vs last month
@@ -66,7 +61,7 @@ export function SummaryCards() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-50 tracking-tight">{formatINR.format(totals.expenses)}</div>
+            <div className="text-2xl font-bold text-slate-50 tracking-tight">{formatCurrency(totals.expenses)}</div>
             <p className="mt-1 flex items-center text-xs font-medium text-rose-400">
               <TrendingDown className="mr-1 h-3 w-3" />
               -3.1% vs last month
@@ -84,7 +79,7 @@ export function SummaryCards() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-50 tracking-tight">{formatINR.format(totals.savings)}</div>
+            <div className="text-2xl font-bold text-slate-50 tracking-tight">{formatCurrency(totals.savings)}</div>
             <p className="mt-1 flex items-center text-xs font-medium text-teal-400">
               <TrendingUp className="mr-1 h-3 w-3" />
               +12.4% vs last month

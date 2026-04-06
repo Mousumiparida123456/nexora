@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, AlertTriangle, Lightbulb, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useDashboard } from "@/lib/dashboard-context";
 
 const container = {
   hidden: { opacity: 0 },
@@ -19,6 +20,8 @@ const item = {
 };
 
 export function InsightsSection() {
+  const { formatCurrency } = useDashboard();
+
   return (
     <div className="mt-6">
       <motion.div 
@@ -46,7 +49,7 @@ export function InsightsSection() {
               </div>
               <h3 className="mb-2 font-semibold text-slate-200">Spending Alert</h3>
               <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                Your entertainment spending increased by <span className="text-amber-400 font-bold">23%</span> this month. Consider reducing streaming subscriptions to save ~₹3,700/month.
+                Your entertainment spending increased by <span className="text-amber-400 font-bold">23%</span> this month. Consider reducing streaming subscriptions to save ~{formatCurrency(3700)}.
               </p>
             </CardContent>
           </Card>
@@ -61,7 +64,7 @@ export function InsightsSection() {
               </div>
               <h3 className="mb-2 font-semibold text-slate-200">Savings Opportunity</h3>
               <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                Based on your income pattern, you could save an additional <span className="text-emerald-400 font-bold">₹31,500</span> this month by optimizing your grocery budget.
+                Based on your income pattern, you could save an additional <span className="text-emerald-400 font-bold">{formatCurrency(31500)}</span> this month by optimizing your grocery budget.
               </p>
             </CardContent>
           </Card>
@@ -76,7 +79,7 @@ export function InsightsSection() {
               </div>
               <h3 className="mb-2 font-semibold text-slate-200">Investment Tip</h3>
               <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                You have ₹99,600 sitting idle in checking. Moving it to a high-yield savings account could earn <span className="text-blue-400 font-bold">~₹5,000/year</span> at 5% APY.
+                You have {formatCurrency(99600)} sitting idle in checking. Moving it to a high-yield savings account could earn <span className="text-blue-400 font-bold">~{formatCurrency(5000)}/year</span> at 5% APY.
               </p>
             </CardContent>
           </Card>

@@ -3,20 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const formatINR = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
-
-const formatINRCompact = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  notation: "compact",
-  compactDisplay: "short",
-  maximumFractionDigits: 1,
-});
+import { useDashboard } from "@/lib/dashboard-context";
 
 const lineData = [
   { name: "Jan", income: 8200, expenses: 6100 },
@@ -44,6 +31,8 @@ const pieData = [
 ];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
+  const { formatCurrency } = useDashboard();
+
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl border border-slate-700/50 bg-slate-900/90 p-3 shadow-xl backdrop-blur-md">
@@ -55,7 +44,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 <div className="h-2 w-2 rounded-full ring-2 ring-slate-900" style={{ backgroundColor: entry.color, boxShadow: `0 0 0 1px ${entry.color}` }} />
                 <span className="text-slate-400 font-medium">{entry.name}</span>
               </div>
-              <span className="font-bold text-slate-100">{formatINR.format(Number(entry.value))}</span>
+              <span className="font-bold text-slate-100">{formatCurrency(Number(entry.value))}</span>
             </div>
           ))}
         </div>
@@ -108,6 +97,14 @@ function DonutChart() {
 }
 
 export function ChartsSection() {
+  const { convertFromINR, formatCompactCurrency } = useDashboard();
+
+  const chartData = lineData.map((row) => ({
+    ...row,
+    income: convertFromINR(row.income),
+    expenses: convertFromINR(row.expenses),
+  }))
+
   return (
     <div className="grid gap-4 md:grid-cols-7 lg:grid-cols-7 mt-4">
       <motion.div 
@@ -123,7 +120,7 @@ export function ChartsSection() {
           <CardContent>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={lineData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
@@ -149,7 +146,7 @@ export function ChartsSection() {
                     fontSize={12} 
                     tickLine={false} 
                     axisLine={false} 
-                    tickFormatter={(value) => formatINRCompact.format(Number(value))}
+                    tickFormatter={(value) => formatCompactCurrency(Number(value))}
                     tick={{ fill: '#64748b' }}
                   />
                   <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }} />
