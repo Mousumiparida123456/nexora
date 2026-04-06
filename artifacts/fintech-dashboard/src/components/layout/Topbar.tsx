@@ -78,7 +78,17 @@ export function Topbar() {
 
   const exportDisabled = !canExport
   const roleLabel = role === "admin" ? "Admin" : "Viewer"
-  const roleBadgeClass = role === "admin" ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/20" : "bg-slate-600/15 text-slate-300 ring-slate-700/30"
+  const isDark = theme === "dark"
+  const shellBorder = isDark ? "border-slate-800/70" : "border-slate-200"
+  const shellPanel = isDark ? "bg-slate-900/80 text-slate-100 hover:border-slate-700 hover:bg-slate-800/90" : "bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50"
+  const iconMuted = isDark ? "text-slate-400" : "text-slate-500"
+  const roleBadgeClass = role === "admin"
+    ? isDark
+      ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/20"
+      : "bg-emerald-500/10 text-emerald-700 ring-emerald-500/15"
+    : isDark
+      ? "bg-slate-600/15 text-slate-300 ring-slate-700/30"
+      : "bg-slate-100 text-slate-600 ring-slate-200"
   const activeNotifications = useMemo(() => notifications, [notifications])
 
   const handleExport = (format: "csv" | "json") => {
@@ -117,17 +127,17 @@ export function Topbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/90 backdrop-blur supports-[backdrop-filter]:bg-slate-950/90">
+    <header className={cn("sticky top-0 z-50 border-b backdrop-blur", isDark ? "border-slate-800/60 bg-[#081126]/90 supports-[backdrop-filter]:bg-[#081126]/90" : "border-slate-200 bg-white/90 supports-[backdrop-filter]:bg-white/85")}>
       <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="rounded-3xl bg-gradient-to-br from-emerald-500/20 via-slate-900/80 to-slate-950/90 p-2 shadow-[0_20px_50px_rgba(16,185,129,0.1)] ring-1 ring-slate-800/60">
-            <div className="flex h-11 w-11 items-center justify-center rounded-3xl bg-slate-950/90 text-emerald-300 shadow-inner shadow-emerald-500/10">
+          <div className={cn("rounded-3xl p-2 ring-1", isDark ? "bg-gradient-to-br from-blue-500/20 via-slate-900/80 to-slate-950/90 shadow-[0_20px_50px_rgba(59,130,246,0.12)] ring-slate-800/60" : "bg-gradient-to-br from-blue-100 via-white to-slate-100 shadow-[0_18px_34px_rgba(148,163,184,0.18)] ring-slate-200")}>
+            <div className={cn("flex h-11 w-11 items-center justify-center rounded-3xl shadow-inner", isDark ? "bg-slate-950/90 text-blue-300 shadow-blue-500/10" : "bg-blue-600 text-white shadow-blue-600/20")}>
               <Globe2 className="h-5 w-5" />
             </div>
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-300/80">NEXORA</p>
-            <h1 className="truncate text-base font-semibold text-slate-50">Finance command center</h1>
+            <p className={cn("text-[11px] font-semibold uppercase tracking-[0.3em]", isDark ? "text-blue-300/80" : "text-blue-600")}>NEXORA</p>
+            <h1 className={cn("truncate text-base font-semibold", isDark ? "text-slate-50" : "text-slate-950")}>Finance command center</h1>
           </div>
         </div>
 
@@ -137,12 +147,12 @@ export function Topbar() {
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-800/70 bg-slate-900/80 px-3 py-2 text-sm font-medium text-slate-100 shadow-sm transition hover:border-slate-700 hover:bg-slate-800/90"
+                    className={cn("inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium shadow-sm transition", shellBorder, shellPanel)}
                     aria-label="Switch currency"
                   >
                     <span>{selectedCurrency.flag}</span>
                     <span className="hidden sm:inline-flex">{selectedCurrency.code}</span>
-                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                    <ChevronDown className={cn("h-4 w-4", iconMuted)} />
                   </button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
@@ -208,15 +218,17 @@ export function Topbar() {
                     className={cn(
                       "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium shadow-sm transition",
                       exportDisabled
-                        ? "border-slate-800/50 bg-slate-900/60 text-slate-500 cursor-not-allowed"
-                        : "border-slate-800/70 bg-slate-900/80 text-slate-100 hover:border-slate-700 hover:bg-slate-800/90",
+                        ? isDark
+                          ? "border-slate-800/50 bg-slate-900/60 text-slate-500 cursor-not-allowed"
+                          : "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
+                        : `${shellBorder} ${shellPanel}`,
                     )}
                     aria-label="Export data"
                     disabled={exportDisabled}
                   >
                     <Download className="h-4 w-4" />
                     <span className="hidden sm:inline-flex">Export</span>
-                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                    <ChevronDown className={cn("h-4 w-4", iconMuted)} />
                   </button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
@@ -248,12 +260,12 @@ export function Topbar() {
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-800/70 bg-slate-900/80 px-3 py-2 text-sm font-medium text-slate-100 shadow-sm transition hover:border-slate-700 hover:bg-slate-800/90"
+                    className={cn("inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium shadow-sm transition", shellBorder, shellPanel)}
                     aria-label="Change role"
                   >
                     <ShieldCheck className="h-4 w-4" />
                     <span className="hidden sm:inline-flex">{roleLabel}</span>
-                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                    <ChevronDown className={cn("h-4 w-4", iconMuted)} />
                   </button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
@@ -279,12 +291,12 @@ export function Topbar() {
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="relative inline-flex items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/80 p-2 text-slate-100 shadow-sm transition hover:border-slate-700 hover:bg-slate-800/90"
+                    className={cn("relative inline-flex items-center justify-center rounded-2xl border p-2 shadow-sm transition", shellBorder, shellPanel)}
                     aria-label="Open notifications"
                   >
                     <Bell className="h-5 w-5" />
                     {unreadNotifications > 0 ? (
-                      <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-semibold text-white ring-2 ring-slate-950">
+                        <span className={cn("absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-semibold text-white ring-2", isDark ? "ring-slate-950" : "ring-white")}>
                         {unreadNotifications}
                       </span>
                     ) : null}
@@ -331,7 +343,7 @@ export function Topbar() {
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/80 text-slate-100 shadow-sm transition hover:border-slate-700 hover:bg-slate-800/90"
+                className={cn("inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-sm transition", shellBorder, shellPanel)}
                 aria-label="Toggle light or dark mode"
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -340,7 +352,7 @@ export function Topbar() {
             <TooltipContent>{theme === "dark" ? "Switch to light" : "Switch to dark"}</TooltipContent>
           </Tooltip>
 
-          <div className={cn("inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm shadow-sm", roleBadgeClass)}>
+          <div className={cn("inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm shadow-sm", roleBadgeClass, isDark ? "border-slate-800/70" : "border-slate-200")}>
             <span className="h-2.5 w-2.5 rounded-full bg-current" />
             <span className="font-medium">{roleLabel}</span>
           </div>
@@ -351,7 +363,7 @@ export function Topbar() {
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/80 text-slate-100 shadow-sm transition hover:border-slate-700 hover:bg-slate-800/90"
+                className={cn("inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-sm transition", shellBorder, shellPanel)}
                 aria-label="Open quick actions"
               >
                 <Menu className="h-5 w-5" />

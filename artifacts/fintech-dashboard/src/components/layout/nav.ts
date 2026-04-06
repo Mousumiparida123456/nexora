@@ -6,6 +6,9 @@ import {
   Sparkles,
   Bell,
   Settings,
+  Target,
+  RefreshCcw,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,7 +25,11 @@ export const BRAND = {
 
 export const MAIN_NAV: NavItemDef[] = [
   { href: "/dashboard",    label: "Dashboard",        icon: LayoutDashboard },
+  { href: "/insights",     label: "Insights",         icon: Sparkles },
   { href: "/transactions", label: "Transactions",     icon: ArrowLeftRight },
+  { href: "/bills",        label: "Bills",            icon: CreditCard },
+  { href: "/recurring",    label: "Recurring",        icon: RefreshCcw },
+  { href: "/goals",        label: "Goals",            icon: Target },
   { href: "/credit-score", label: "Credit Simulator", icon: Gauge },
   { href: "/invest",       label: "Investments",      icon: TrendingUp },
 ];

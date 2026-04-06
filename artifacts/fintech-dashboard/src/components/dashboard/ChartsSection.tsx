@@ -4,6 +4,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDashboard } from "@/lib/dashboard-context";
+import { cn } from "@/lib/utils";
 
 const lineData = [
   { name: "Jan", income: 8200, expenses: 6100 },
@@ -31,20 +32,20 @@ const pieData = [
 ];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
-  const { formatCurrency } = useDashboard();
+  const { formatCurrency, theme } = useDashboard();
 
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-xl border border-slate-700/50 bg-slate-900/90 p-3 shadow-xl backdrop-blur-md">
-        <p className="mb-2 text-xs font-semibold text-slate-300 uppercase tracking-wider">{label}</p>
+      <div className={cn("rounded-xl border p-3 shadow-xl backdrop-blur-md", theme === "dark" ? "border-slate-700/50 bg-slate-900/90" : "border-slate-200 bg-white/90")}>
+        <p className={cn("mb-2 text-xs font-semibold uppercase tracking-wider", theme === "dark" ? "text-slate-300" : "text-slate-600")}>{label}</p>
         <div className="space-y-1.5">
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center justify-between gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full ring-2 ring-slate-900" style={{ backgroundColor: entry.color, boxShadow: `0 0 0 1px ${entry.color}` }} />
-                <span className="text-slate-400 font-medium">{entry.name}</span>
+                <div className={cn("h-2 w-2 rounded-full ring-2", theme === "dark" ? "ring-slate-900" : "ring-white")} style={{ backgroundColor: entry.color, boxShadow: `0 0 0 1px ${entry.color}` }} />
+                <span className={cn("font-medium", theme === "dark" ? "text-slate-400" : "text-slate-600")}>{entry.name}</span>
               </div>
-              <span className="font-bold text-slate-100">{formatCurrency(Number(entry.value))}</span>
+              <span className={cn("font-bold", theme === "dark" ? "text-slate-100" : "text-slate-900")}>{formatCurrency(Number(entry.value))}</span>
             </div>
           ))}
         </div>
@@ -55,6 +56,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 function DonutChart() {
+  const { theme } = useDashboard();
   const size = 200;
   const cx = size / 2;
   const cy = size / 2;
@@ -90,14 +92,14 @@ function DonutChart() {
           />
         );
       })}
-      <text x={cx} y={cy - 8} textAnchor="middle" fill="#e2e8f0" fontSize="22" fontWeight="700">74%</text>
-      <text x={cx} y={cy + 14} textAnchor="middle" fill="#64748b" fontSize="11">of budget</text>
+      <text x={cx} y={cy - 8} textAnchor="middle" fill={theme === "dark" ? "#e2e8f0" : "#1e293b"} fontSize="22" fontWeight="700">74%</text>
+      <text x={cx} y={cy + 14} textAnchor="middle" fill={theme === "dark" ? "#64748b" : "#64748b"} fontSize="11">of budget</text>
     </svg>
   );
 }
 
 export function ChartsSection() {
-  const { convertFromINR, formatCompactCurrency } = useDashboard();
+  const { convertFromINR, formatCompactCurrency, theme } = useDashboard();
 
   const chartData = lineData.map((row) => ({
     ...row,
@@ -113,9 +115,9 @@ export function ChartsSection() {
         transition={{ delay: 0.2 }}
         className="md:col-span-4 lg:col-span-5"
       >
-        <Card className="bg-[#1e293b]/80 border-slate-700/50 h-full hover:border-slate-600/50 transition-colors">
+        <Card className={cn("h-full hover:border-slate-600/50 transition-colors", theme === "dark" ? "bg-[#1e293b]/80 border-slate-700/50" : "bg-white border-slate-200")}>
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold text-slate-200">Monthly Overview</CardTitle>
+            <CardTitle className={cn("text-base font-semibold", theme === "dark" ? "text-slate-200" : "text-slate-900")}>Monthly Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] w-full">
@@ -131,23 +133,23 @@ export function ChartsSection() {
                       <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#334155" vertical={false} opacity={0.5} />
+                  <CartesianGrid strokeDasharray="4 4" stroke={theme === "dark" ? "#334155" : "#e2e8f0"} vertical={false} opacity={0.5} />
                   <XAxis 
                     dataKey="name" 
-                    stroke="#64748b" 
+                    stroke={theme === "dark" ? "#64748b" : "#64748b"} 
                     fontSize={12} 
                     tickLine={false} 
                     axisLine={false}
                     dy={10}
-                    tick={{ fill: '#64748b' }}
+                    tick={{ fill: theme === "dark" ? '#64748b' : '#64748b' }}
                   />
                   <YAxis 
-                    stroke="#64748b" 
+                    stroke={theme === "dark" ? "#64748b" : "#64748b"} 
                     fontSize={12} 
                     tickLine={false} 
                     axisLine={false} 
                     tickFormatter={(value) => formatCompactCurrency(Number(value))}
-                    tick={{ fill: '#64748b' }}
+                    tick={{ fill: theme === "dark" ? '#64748b' : '#64748b' }}
                   />
                   <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }} />
                   <Legend 
@@ -187,22 +189,22 @@ export function ChartsSection() {
         transition={{ delay: 0.3 }}
         className="md:col-span-3 lg:col-span-2"
       >
-        <Card className="bg-[#1e293b]/80 border-slate-700/50 h-full hover:border-slate-600/50 transition-colors">
+        <Card className={cn("h-full hover:border-slate-600/50 transition-colors", theme === "dark" ? "bg-[#1e293b]/80 border-slate-700/50" : "bg-white border-slate-200")}>
           <CardHeader className="pb-0">
-            <CardTitle className="text-base font-semibold text-slate-200">Expense Breakdown</CardTitle>
+            <CardTitle className={cn("text-base font-semibold", theme === "dark" ? "text-slate-200" : "text-slate-900")}>Expense Breakdown</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center pt-2 pb-4">
             <div className="flex justify-center w-full mt-2">
               <DonutChart />
             </div>
             
-            <div className="w-full mt-3 bg-slate-900/40 rounded-xl p-3 border border-slate-800/50">
+            <div className={cn("w-full mt-3 rounded-xl p-3 border", theme === "dark" ? "bg-slate-900/40 border-slate-800/50" : "bg-slate-50 border-slate-200")}>
               <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 text-xs">
                 {pieData.map((item) => (
                   <div key={item.name} className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                    <span className="text-slate-400 truncate flex-1 font-medium">{item.name}</span>
-                    <span className="font-bold text-slate-200">{item.value}%</span>
+                    <span className={cn("truncate flex-1 font-medium", theme === "dark" ? "text-slate-400" : "text-slate-600")}>{item.name}</span>
+                    <span className={cn("font-bold", theme === "dark" ? "text-slate-200" : "text-slate-900")}>{item.value}%</span>
                   </div>
                 ))}
               </div>

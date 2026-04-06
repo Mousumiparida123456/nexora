@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   ChevronDown,
-  ArrowUpCircle,
-  ArrowDownCircle,
   Trash2,
   SlidersHorizontal,
 } from "lucide-react";
@@ -60,13 +58,6 @@ export function TransactionList({ transactions, onDelete }: TransactionListProps
     });
   }, [transactions, search, filterCategory, filterType, filterDateFrom, filterDateTo]);
 
-  const totalIncome = filtered
-    .filter((t) => t.type === "income")
-    .reduce((s, t) => s + t.amount, 0);
-  const totalExpense = filtered
-    .filter((t) => t.type === "expense")
-    .reduce((s, t) => s + t.amount, 0);
-
   const hasActiveFilters =
     filterCategory !== "All" ||
     filterType !== "All" ||
@@ -81,58 +72,58 @@ export function TransactionList({ transactions, onDelete }: TransactionListProps
   }
 
   return (
-    <div className="rounded-2xl border border-slate-700/60 bg-[#1e293b]/90 overflow-hidden shadow-xl shadow-slate-950/30">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-950 dark:shadow-none">
       {/* Header */}
-      <div className="border-b border-slate-700/50 px-6 py-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700/60">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-slate-100">Transactions</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {filtered.length} record{filtered.length !== 1 ? "s" : ""}
+            <h2 className="text-2xl font-semibold text-slate-950 dark:text-slate-50">Transactions</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
             </p>
           </div>
 
-          {/* Summary pills */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5">
-              <ArrowUpCircle className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-xs font-semibold text-emerald-400">{formatCurrency(totalIncome)}</span>
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto] xl:grid-cols-[1fr_auto_auto] xl:items-center xl:gap-3">
+            <div className="relative min-w-0">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search transactions..."
+                data-testid="input-search-transactions"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+              />
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 px-3 py-1.5">
-              <ArrowDownCircle className="h-3.5 w-3.5 text-rose-400" />
-              <span className="text-xs font-semibold text-rose-400">{formatCurrency(totalExpense)}</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Search + Filter toggle */}
-        <div className="flex flex-col sm:flex-row gap-2 mt-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search transactions..."
-              data-testid="input-search-transactions"
-              className="w-full rounded-xl bg-slate-900/60 border border-slate-700/60 pl-9 pr-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all"
-            />
+            <div className="relative min-w-[170px]">
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value as Category | "All")}
+                data-testid="select-filter-category"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              >
+                <option value="All">All</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c} className="dark:bg-slate-900">{c}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            </div>
+
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              data-testid="button-toggle-filters"
+              className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                hasActiveFilters
+                  ? "bg-slate-950 text-white shadow-sm dark:bg-slate-700"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              }`}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
+            </button>
           </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            data-testid="button-toggle-filters"
-            className={`w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all ${
-              hasActiveFilters
-                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
-                : "border-slate-700/60 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:border-slate-600"
-            }`}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Filters
-            {hasActiveFilters && (
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            )}
-          </button>
         </div>
 
         {/* Filter panel */}
@@ -222,63 +213,81 @@ export function TransactionList({ transactions, onDelete }: TransactionListProps
       </div>
 
       {/* Transaction rows */}
-      <div className="divide-y divide-slate-800/60">
-        <AnimatePresence initial={false}>
-          {filtered.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-16 text-slate-600"
-            >
-              <Search className="h-10 w-10 mb-3 opacity-40" />
-              <p className="text-sm font-medium">No transactions found</p>
-              <p className="text-xs mt-1">Try adjusting your search or filters</p>
-            </motion.div>
-          ) : (
-            filtered.map((tx, i) => (
+      <div className="border-t border-slate-200 dark:border-slate-700/60 overflow-x-auto">
+        <div className="min-w-[720px] table w-full">
+          <div className="table-header-group border-b border-slate-200 dark:border-slate-700/60">
+            <div className="table-row">
+              <div className="table-cell px-6 py-3 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Date</div>
+              <div className="table-cell px-6 py-3 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Description</div>
+              <div className="table-cell px-6 py-3 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Category</div>
+              <div className="table-cell px-6 py-3 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Type</div>
+              <div className="table-cell px-6 py-3 text-right text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Amount</div>
+              <div className="table-cell px-6 py-3 text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400 sr-only">Actions</div>
+            </div>
+          </div>
+
+          <AnimatePresence initial={false}>
+            {filtered.length === 0 ? (
               <motion.div
-                key={tx.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 8, height: 0 }}
-                transition={{ delay: i < 10 ? i * 0.02 : 0 }}
-                data-testid={`row-transaction-${tx.id}`}
-                className="group flex items-center gap-4 px-6 py-3.5 hover:bg-slate-800/30 transition-colors"
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="px-6 py-16 text-slate-600 dark:text-slate-400"
               >
-                <CategoryIcon category={tx.category} size="md" />
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-200 truncate">{tx.description}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{tx.category}</p>
+                <div className="flex flex-col items-center justify-center">
+                  <Search className="h-10 w-10 mb-3 opacity-40" />
+                  <p className="text-sm font-medium">No transactions found</p>
+                  <p className="text-xs mt-1">Try adjusting your search or filters</p>
                 </div>
-
-                <div className="hidden sm:block text-xs text-slate-500 text-right shrink-0">
-                  {formatDate(tx.date)}
-                </div>
-
-                <div
-                  className={`text-sm font-bold shrink-0 w-28 text-right ${
-                    tx.type === "income" ? "text-emerald-400" : "text-rose-400"
-                  }`}
-                  data-testid={`text-amount-${tx.id}`}
-                >
-                  {tx.type === "income" ? "+" : "-"}
-                  {formatCurrency(tx.amount)}
-                </div>
-
-                <button
-                  onClick={() => onDelete(tx.id)}
-                  data-testid={`button-delete-${tx.id}`}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                  aria-label="Delete transaction"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
               </motion.div>
-            ))
-          )}
-        </AnimatePresence>
+            ) : (
+              filtered.map((tx, i) => (
+                <motion.div
+                  key={tx.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 8, height: 0 }}
+                  transition={{ delay: i < 10 ? i * 0.02 : 0 }}
+                  data-testid={`row-transaction-${tx.id}`}
+                  className="group table-row border-b border-slate-200 last:border-b-0 hover:bg-slate-50 dark:border-slate-700/60 dark:hover:bg-slate-900"
+                >
+                  <div className="table-cell px-6 py-4 align-middle whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {formatDate(tx.date)}
+                  </div>
+                  <div className="table-cell px-6 py-4 align-middle max-w-[340px] overflow-hidden text-ellipsis whitespace-nowrap">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate block">{tx.description}</span>
+                  </div>
+                  <div className="table-cell px-6 py-4 align-middle whitespace-nowrap">
+                    <div className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <CategoryIcon category={tx.category} size="sm" />
+                      <span className="truncate">{tx.category}</span>
+                    </div>
+                  </div>
+                  <div className="table-cell px-6 py-4 align-middle whitespace-nowrap">
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                      tx.type === "income" ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                    }`}>{tx.type}</span>
+                  </div>
+                  <div className={`table-cell px-6 py-4 align-middle whitespace-nowrap text-right text-sm font-semibold ${
+                    tx.type === "income" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                  }`}>
+                    {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount)}
+                  </div>
+                  <div className="table-cell px-6 py-4 align-middle whitespace-nowrap">
+                    <button
+                      onClick={() => onDelete(tx.id)}
+                      data-testid={`button-delete-${tx.id}`}
+                      className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-rose-500 dark:hover:bg-slate-800 transition"
+                      aria-label="Delete transaction"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

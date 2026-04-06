@@ -11,6 +11,9 @@ const AUTH_STORAGE_KEY = "nexora.authenticated";
 const Dashboard = lazy(() =>
   import("@/pages/Dashboard").then((module) => ({ default: module.Dashboard })),
 );
+const Insights = lazy(() =>
+  import("@/pages/Insights").then((module) => ({ default: module.Insights })),
+);
 const Transactions = lazy(() =>
   import("@/pages/Transactions").then((module) => ({
     default: module.Transactions,
@@ -29,10 +32,23 @@ const AIAssistant = lazy(() =>
     default: module.AIAssistant,
   })),
 );
+const Goals = lazy(() =>
+  import("@/pages/Goals").then((module) => ({
+    default: module.Goals,
+  })),
+);
+const Bills = lazy(() =>
+  import("@/pages/Bills").then((module) => ({
+    default: module.Bills,
+  })),
+);
 const Notifications = lazy(() =>
   import("@/pages/Notifications").then((module) => ({
     default: module.Notifications,
   })),
+);
+const Recurring = lazy(() =>
+  import("@/pages/Recurring").then((module) => ({ default: module.Recurring })),
 );
 const Settings = lazy(() =>
   import("@/pages/Settings").then((module) => ({ default: module.Settings })),
@@ -70,14 +86,18 @@ function Router() {
           <Route path="/dashboard">
             <ProtectedRoute component={Dashboard} />
           </Route>
-          <Route path="/transactions">
-            <ProtectedRoute component={Transactions} />
+          <Route path="/insights">
+            <ProtectedRoute component={Insights} />
           </Route>
-          <Route path="/credit-score">
-            <ProtectedRoute component={CreditScore} />
-          </Route>
+          <Route path="/transactions" component={() => <ProtectedRoute component={Transactions} />} />
+          <Route path="/bills" component={() => <ProtectedRoute component={Bills} />} />
+          <Route path="/recurring" component={() => <ProtectedRoute component={Recurring} />} />
+          <Route path="/credit-score" component={() => <ProtectedRoute component={CreditScore} />} />
           <Route path="/invest">
             <ProtectedRoute component={Investment} />
+          </Route>
+          <Route path="/goals">
+            <ProtectedRoute component={Goals} />
           </Route>
           <Route path="/ai-assistant">
             <ProtectedRoute component={AIAssistant} />
