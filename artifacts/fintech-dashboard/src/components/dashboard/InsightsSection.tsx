@@ -26,18 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDashboard } from "@/lib/dashboard-context";
 import { cn } from "@/lib/utils";
 
-const heatmapMonths = ["Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr"];
-const heatmapDays = ["", "Tue", "", "Thu", "", "Sat", ""];
-const heatmapValues = [
-  [0, 1, 2, 1, 1, 2, 3, 2, 1, 0, 1, 0, 1],
-  [0, 2, 1, 2, 3, 2, 4, 3, 2, 1, 2, 1, 0],
-  [1, 1, 3, 2, 3, 4, 4, 3, 2, 2, 1, 1, 1],
-  [1, 2, 2, 3, 4, 4, 4, 3, 2, 2, 1, 1, 1],
-  [2, 2, 3, 4, 4, 4, 4, 3, 2, 2, 1, 1, 0],
-  [2, 3, 3, 4, 4, 4, 4, 3, 2, 1, 1, 1, 1],
-  [1, 2, 2, 3, 3, 3, 3, 2, 1, 1, 0, 0, 0],
-];
-
 const categoryTrendData = [
   { month: "Oct", Housing: 850, Shopping: 950, "Food & Dining": 430, Utilities: 95 },
   { month: "Nov", Housing: 1200, Shopping: 820, "Food & Dining": 510, Utilities: 115 },
@@ -119,80 +107,11 @@ const observations = [
   },
 ];
 
-function HeatmapCell({ level }: { level: number }) {
-  const colors = [
-    "bg-slate-100 dark:bg-slate-900",
-    "bg-slate-200 dark:bg-slate-800",
-    "bg-slate-300 dark:bg-slate-700",
-    "bg-blue-500/40 dark:bg-blue-500/30",
-    "bg-blue-500 dark:bg-blue-400",
-  ];
-  return <div className={cn("h-4 w-4 rounded-md border border-slate-300/60 shadow-sm dark:border-slate-700/60 transition-colors", colors[level])} />;
-}
-
 export function InsightsSection() {
   const { formatCurrency, formatCompactCurrency, theme } = useDashboard();
 
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950/80"
-      >
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className={cn("text-xs uppercase tracking-[0.3em]", theme === "dark" ? "text-slate-400" : "text-slate-500")}>Spending Heatmap</p>
-            <h2 className={cn("mt-2 text-2xl font-semibold", theme === "dark" ? "text-slate-100" : "text-slate-950")}>Insights</h2>
-            <p className={cn("mt-2 max-w-2xl text-sm leading-6", theme === "dark" ? "text-slate-400" : "text-slate-600")}>Daily expense intensity over the past year.</p>
-          </div>
-          <div className="rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 shadow-sm dark:border-slate-800/80 dark:bg-slate-900 dark:text-slate-200">
-            <span className="text-slate-500">Less</span>
-            <span className="mx-2 inline-flex h-3 w-3 rounded-md bg-slate-200" />
-            <span className="mx-2 inline-flex h-3 w-3 rounded-md bg-slate-300" />
-            <span className="mx-2 inline-flex h-3 w-3 rounded-md bg-indigo-500" />
-            <span className="ml-2 text-slate-500">More</span>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <div className="min-w-[720px] rounded-3xl border border-slate-200/90 bg-slate-50 p-5 dark:border-slate-800/90 dark:bg-slate-900">
-            <div className="flex items-center justify-between gap-4 border-b border-slate-200/80 pb-4 dark:border-slate-700/80">
-              <div>
-                <p className={cn("text-sm font-semibold", theme === "dark" ? "text-slate-200" : "text-slate-950")}>Daily spending intensity</p>
-                <p className={cn("text-xs text-slate-500", theme === "dark" ? "text-slate-400" : "text-slate-600")}>Track how activity changes across the year.</p>
-              </div>
-              <div className={cn("rounded-2xl border px-3 py-1 text-xs font-medium", theme === "dark" ? "border-slate-700 bg-slate-950 text-slate-300" : "border-slate-200 bg-white text-slate-700")}>Apr — Apr</div>
-            </div>
-            <div className="mt-5">
-              <div className="grid min-w-full grid-cols-[90px_repeat(13,minmax(0,1fr))] gap-4 pb-2 text-[10px] uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
-                <div />
-                {heatmapMonths.map((month, index) => (
-                  <div key={`${month}-${index}`} className="text-center">{month}</div>
-                ))}
-              </div>
-              <div className="mt-3 grid min-w-full grid-cols-[90px_repeat(13,minmax(0,1fr))] gap-4">
-                <div className="grid grid-rows-[repeat(7,minmax(0,1fr))] gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {heatmapDays.map((day, index) => (
-                    <span key={`${day}-${index}`} className="h-4 leading-4">{day}</span>
-                  ))}
-                </div>
-                <div className="grid grid-rows-[repeat(7,minmax(0,1fr))] gap-2">
-                  {heatmapValues.map((row, rowIndex) => (
-                    <div key={rowIndex} className="grid w-full grid-cols-[repeat(13,minmax(0,1fr))] gap-2">
-                      {row.map((level, index) => (
-                        <HeatmapCell key={`${rowIndex}-${index}`} level={level} />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
       <div className="grid gap-4 xl:grid-cols-[1.4fr_0.95fr]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
