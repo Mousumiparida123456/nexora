@@ -5,6 +5,20 @@ import { logger } from "./logger";
 class CacheService {
   private redis?: Redis;
   private readonly fallback = new Map<string, { value: string; expiresAt: number }>();
+  private warned = false;
+
+  private disableRedis(reason: unknown) {
+    if (!this.warned) {
+      logger.warn(`Redis unavailable, using in-memory fallback: ${String(reason)}`);
+      this.warned = true;
+    }
+
+    if (this.redis) {
+      this.redis.removeAllListeners();
+      this.redis.disconnect();
+      this.redis = undefined;
+    }
+  }
 
   constructor() {
     if (env.NODE_ENV === "test") return;
@@ -12,11 +26,15 @@ class CacheService {
     this.redis = new Redis(env.REDIS_URL, {
       lazyConnect: true,
       maxRetriesPerRequest: 1,
+      retryStrategy: () => null,
+    });
+
+    this.redis.on("error", (error: unknown) => {
+      this.disableRedis(error);
     });
 
     this.redis.connect().catch((error: unknown) => {
-      logger.warn(`Redis unavailable, using in-memory fallback: ${String(error)}`);
-      this.redis = undefined;
+      this.disableRedis(error);
     });
   }
 
