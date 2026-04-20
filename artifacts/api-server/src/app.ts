@@ -1,6 +1,6 @@
 import cookieParser from "cookie-parser";
 import express from "express";
-import type { NextFunction, Request, Response } from "express";
+import type { RequestHandler } from "express";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import { env, isProduction } from "./config/env";
@@ -42,16 +42,19 @@ export function createApp() {
   app.use(apiRateLimiter);
 
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  app.use("/api/v1/auth", (req: Request, res: Response, next: NextFunction) => {
-    if (["/login", "/register", "/refresh"].includes(req.path)) {
-      return next();
+  const authCsrfGuard: RequestHandler = (req, res, next) => {
+    if (["/login", "/register", "/refresh"].includes(req.url)) {
+      next();
+      return;
     }
 
-    return csrfProtection(req, res, next);
-  });
+    csrfProtection(req, res, next);
+  };
+
+  app.use("/api/v1/auth", authCsrfGuard);
   app.use(env.API_PREFIX, router);
 
-  app.get("/", (_req: Request, res: Response) => {
+  app.get("/", (_req, res) => {
     res.status(200).json({
       name: env.APP_NAME,
       docs: "/docs",
