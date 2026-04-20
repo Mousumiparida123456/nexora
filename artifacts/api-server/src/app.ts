@@ -43,20 +43,22 @@ export function createApp() {
 
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   
-  const authCsrfGuard: express.RequestHandler = (req, res, next) => {
+  app.use("/api/v1/auth", function authCsrfGuard(req: Request, res: Response, next: NextFunction) {
     const publicPaths = ["/login", "/register", "/refresh"];
-    const reqPath = (req as any).path || (req as any).url;
-    if (publicPaths.some(path => reqPath?.includes(path))) {
-      return (next as any)();
+    const path = typeof (req as any).path === "string" ? (req as any).path : (req as any).url;
+    
+    if (publicPaths.some((p) => path?.includes(p))) {
+      return next?.();
     }
-    return (csrfProtection as express.RequestHandler)(req, res, next);
-  };
+    
+    return csrfProtection(req, res, next);
+  } as express.RequestHandler);
   
-  app.use("/api/v1/auth", authCsrfGuard);
   app.use(env.API_PREFIX, router);
 
   app.get("/", (_req: Request, res: Response) => {
-    return (res as any).status(200).json({
+    const statusResponse = (res as any).status(200);
+    return statusResponse.json({
       name: env.APP_NAME,
       docs: "/docs",
       health: `${env.API_PREFIX}/health`,
