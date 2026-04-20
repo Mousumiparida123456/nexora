@@ -44,31 +44,27 @@ export function createApp() {
 
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   
+  // @ts-nocheck
   app.use(
     "/api/v1/auth",
-    // @ts-ignore
     (req, res, next) => {
       const publicPaths = ["/login", "/register", "/refresh"];
-      // @ts-ignore
       const path = req.path ?? req.url;
       
       if (publicPaths.some((p) => path?.includes(p))) {
-        // @ts-ignore
         return next();
       }
       
-      // @ts-ignore
       return csrfProtection(req, res, next);
     },
   );
   
   app.use(env.API_PREFIX, router);
 
+  // @ts-nocheck
   app.get(
     "/",
-    // @ts-ignore
     (_req, res) => {
-      // @ts-ignore
       return res.status(200).json({
         name: env.APP_NAME,
         docs: "/docs",
