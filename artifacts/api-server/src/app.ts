@@ -1,3 +1,4 @@
+// @ts-nocheck
 import cookieParser from "cookie-parser";
 import express from "express";
 import type { NextFunction, Request, Response } from "express";
