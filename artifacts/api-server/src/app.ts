@@ -43,32 +43,38 @@ export function createApp() {
 
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   
-  // @ts-ignore - Express 5 type compatibility
-  app.use("/api/v1/auth", (req, res, next) => {
-    const publicPaths = ["/login", "/register", "/refresh"];
-    // @ts-ignore - Express 5 url/path property
-    const path = req.path ?? req.url;
-    
-    if (publicPaths.some((p) => path?.includes(p))) {
-      // @ts-ignore - Express 5 next function type
-      return next();
-    }
-    
-    // @ts-ignore - Express 5 type compatibility
-    return csrfProtection(req, res, next);
-  });
+  app.use(
+    "/api/v1/auth",
+    // @ts-ignore
+    (req, res, next) => {
+      const publicPaths = ["/login", "/register", "/refresh"];
+      // @ts-ignore
+      const path = req.path ?? req.url;
+      
+      if (publicPaths.some((p) => path?.includes(p))) {
+        // @ts-ignore
+        return next();
+      }
+      
+      // @ts-ignore
+      return csrfProtection(req, res, next);
+    },
+  );
   
   app.use(env.API_PREFIX, router);
 
-  // @ts-ignore - Express 5 type compatibility
-  app.get("/", (_req, res) => {
-    // @ts-ignore - Express 5 status method
-    return res.status(200).json({
-      name: env.APP_NAME,
-      docs: "/docs",
-      health: `${env.API_PREFIX}/health`,
-    });
-  });
+  app.get(
+    "/",
+    // @ts-ignore
+    (_req, res) => {
+      // @ts-ignore
+      return res.status(200).json({
+        name: env.APP_NAME,
+        docs: "/docs",
+        health: `${env.API_PREFIX}/health`,
+      });
+    },
+  );
 
   app.use(notFoundHandler);
   app.use(errorHandler);
