@@ -43,22 +43,27 @@ export function createApp() {
 
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   
-  app.use("/api/v1/auth", function authCsrfGuard(req: Request, res: Response, next: NextFunction) {
+  // @ts-ignore - Express 5 type compatibility
+  app.use("/api/v1/auth", (req, res, next) => {
     const publicPaths = ["/login", "/register", "/refresh"];
-    const path = typeof (req as any).path === "string" ? (req as any).path : (req as any).url;
+    // @ts-ignore - Express 5 url/path property
+    const path = req.path ?? req.url;
     
     if (publicPaths.some((p) => path?.includes(p))) {
-      return next?.();
+      // @ts-ignore - Express 5 next function type
+      return next();
     }
     
+    // @ts-ignore - Express 5 type compatibility
     return csrfProtection(req, res, next);
-  } as express.RequestHandler);
+  });
   
   app.use(env.API_PREFIX, router);
 
-  app.get("/", (_req: Request, res: Response) => {
-    const statusResponse = (res as any).status(200);
-    return statusResponse.json({
+  // @ts-ignore - Express 5 type compatibility
+  app.get("/", (_req, res) => {
+    // @ts-ignore - Express 5 status method
+    return res.status(200).json({
       name: env.APP_NAME,
       docs: "/docs",
       health: `${env.API_PREFIX}/health`,
