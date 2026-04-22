@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@vercel/node": "^5.7.12",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "cookie-parser": "^1.4.7",
@@ -22,7 +23,6 @@
     "pino-http": "^10"
   },
   "devDependencies": {
-    "@vercel/node": "^5.7.12",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
