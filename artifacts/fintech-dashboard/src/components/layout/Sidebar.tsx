@@ -11,10 +11,9 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BRAND, MAIN_NAV, TOOL_NAV } from "@/components/layout/nav";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/lib/dashboard-context";
-
-const AUTH_STORAGE_KEY = "nexora.authenticated";
 
 function NavItem({
   href,
@@ -95,7 +94,7 @@ function NavItem({
 }
 
 export function Sidebar() {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { theme } = useDashboard();
   const isDark = theme === "dark";
@@ -106,8 +105,7 @@ export function Sidebar() {
   }
 
   function handleLogout() {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setLocation("/login");
+    api.logout();
   }
 
   return (

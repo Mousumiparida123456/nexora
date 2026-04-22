@@ -1,12 +1,12 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Switch, Route, Redirect, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout/Layout";
+import { api } from "@/lib/api";
 
 const queryClient = new QueryClient();
-const AUTH_STORAGE_KEY = "nexora.authenticated";
 
 const Dashboard = lazy(() =>
   import("@/pages/Dashboard").then((module) => ({ default: module.Dashboard })),
@@ -58,19 +58,38 @@ const Login = lazy(() =>
 );
 const NotFound = lazy(() => import("@/pages/not-found"));
 
-function isAuthenticated() {
-  return typeof window !== "undefined" && localStorage.getItem(AUTH_STORAGE_KEY) === "true";
+type AuthStatus = "checking" | "authenticated" | "unauthenticated";
+
+function ProtectedRoute({
+  component: Component,
+  authStatus,
+}: {
+  component: React.ComponentType;
+  authStatus: AuthStatus;
+}) {
+  if (authStatus === "checking") {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center text-sm font-medium text-slate-400">
+        Verifying secure session...
+      </div>
+    );
+  }
+
+  return authStatus === "authenticated" ? <Component /> : <Redirect to="/login" />;
 }
 
-function LoginEntry() {
-  return isAuthenticated() ? <Redirect to="/dashboard" /> : <Login />;
-}
+function Router({ authStatus }: { authStatus: AuthStatus }) {
+  const loginEntry =
+    authStatus === "checking" ? (
+      <div className="flex min-h-[40vh] items-center justify-center text-sm font-medium text-slate-400">
+        Verifying secure session...
+      </div>
+    ) : authStatus === "authenticated" ? (
+      <Redirect to="/dashboard" />
+    ) : (
+      <Login />
+    );
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  return isAuthenticated() ? <Component /> : <Redirect to="/login" />;
-}
-
-function Router() {
   return (
     <Layout>
       <Suspense
@@ -81,32 +100,32 @@ function Router() {
         }
       >
         <Switch>
-          <Route path="/" component={LoginEntry} />
-          <Route path="/login" component={LoginEntry} />
+          <Route path="/">{loginEntry}</Route>
+          <Route path="/login">{loginEntry}</Route>
           <Route path="/dashboard">
-            <ProtectedRoute component={Dashboard} />
+            <ProtectedRoute component={Dashboard} authStatus={authStatus} />
           </Route>
           <Route path="/insights">
-            <ProtectedRoute component={Insights} />
+            <ProtectedRoute component={Insights} authStatus={authStatus} />
           </Route>
-          <Route path="/transactions" component={() => <ProtectedRoute component={Transactions} />} />
-          <Route path="/bills" component={() => <ProtectedRoute component={Bills} />} />
-          <Route path="/recurring" component={() => <ProtectedRoute component={Recurring} />} />
-          <Route path="/credit-score" component={() => <ProtectedRoute component={CreditScore} />} />
+          <Route path="/transactions" component={() => <ProtectedRoute component={Transactions} authStatus={authStatus} />} />
+          <Route path="/bills" component={() => <ProtectedRoute component={Bills} authStatus={authStatus} />} />
+          <Route path="/recurring" component={() => <ProtectedRoute component={Recurring} authStatus={authStatus} />} />
+          <Route path="/credit-score" component={() => <ProtectedRoute component={CreditScore} authStatus={authStatus} />} />
           <Route path="/invest">
-            <ProtectedRoute component={Investment} />
+            <ProtectedRoute component={Investment} authStatus={authStatus} />
           </Route>
           <Route path="/goals">
-            <ProtectedRoute component={Goals} />
+            <ProtectedRoute component={Goals} authStatus={authStatus} />
           </Route>
           <Route path="/ai-assistant">
-            <ProtectedRoute component={AIAssistant} />
+            <ProtectedRoute component={AIAssistant} authStatus={authStatus} />
           </Route>
           <Route path="/notifications">
-            <ProtectedRoute component={Notifications} />
+            <ProtectedRoute component={Notifications} authStatus={authStatus} />
           </Route>
           <Route path="/settings">
-            <ProtectedRoute component={Settings} />
+            <ProtectedRoute component={Settings} authStatus={authStatus} />
           </Route>
           <Route component={NotFound} />
         </Switch>
@@ -116,11 +135,32 @@ function Router() {
 }
 
 function App() {
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    api
+      .isAuthenticated()
+      .then((authenticated) => {
+        if (!isMounted) return;
+        setAuthStatus(authenticated ? "authenticated" : "unauthenticated");
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setAuthStatus("unauthenticated");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}> 
-          <Router />
+          <Router authStatus={authStatus} />
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

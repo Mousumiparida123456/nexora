@@ -1,80 +1,76 @@
-// @ts-nocheck
+import express, { type Express } from "express";
+import cors from "cors";
 import cookieParser from "cookie-parser";
-import express from "express";
-import type { NextFunction, Request, Response } from "express";
-import morgan from "morgan";
-import swaggerUi from "swagger-ui-express";
-import { env, isProduction } from "./config/env";
-import { swaggerSpec } from "./config/swagger";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import pinoHttp from "pino-http";
+import router from "./routes";
 import { logger } from "./lib/logger";
-import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
-import { apiRateLimiter } from "./middlewares/rate-limit.middleware";
-import {
-  corsMiddleware,
-  csrfProtection,
-  requestContext,
-  sanitizeInput,
-  securityHeaders,
-} from "./middlewares/security.middleware";
-import router from "./routes/index";
+import { authMiddleware } from "./middlewares/authMiddleware";
 
-export function createApp() {
-  const app = express();
+const app: Express = express();
 
-  app.disable("x-powered-by");
-  if (isProduction) {
-    app.set("trust proxy", 1);
-  }
+// Trust the Replit proxy so req.ip and rate limiting work correctly
+app.set("trust proxy", 1);
 
-  app.use(requestContext);
-  app.use(
-    morgan("combined", {
-      stream: {
-        write: (message) => logger.info(message.trim()),
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      req(req) {
+        return {
+          id: req.id,
+          method: req.method,
+          url: req.url?.split("?")[0],
+        };
       },
-    }),
-  );
-  app.use(securityHeaders);
-  app.use(corsMiddleware);
-  app.use(express.json({ limit: env.REQUEST_SIZE_LIMIT }));
-  app.use(express.urlencoded({ extended: true, limit: env.REQUEST_SIZE_LIMIT }));
-  app.use(cookieParser());
-  app.use(sanitizeInput);
-  app.use(apiRateLimiter);
-
-  app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  
-  // @ts-nocheck
-  app.use(
-    "/api/v1/auth",
-    (req, res, next) => {
-      const publicPaths = ["/login", "/register", "/refresh"];
-      const path = req.path ?? req.url;
-      
-      if (publicPaths.some((p) => path?.includes(p))) {
-        return next();
-      }
-      
-      return csrfProtection(req, res, next);
+      res(res) {
+        return {
+          statusCode: res.statusCode,
+        };
+      },
     },
-  );
-  
-  app.use(env.API_PREFIX, router);
+  }),
+);
 
-  // @ts-nocheck
-  app.get(
-    "/",
-    (_req, res) => {
-      return res.status(200).json({
-        name: env.APP_NAME,
-        docs: "/docs",
-        health: `${env.API_PREFIX}/health`,
-      });
-    },
-  );
+// Secure HTTP headers
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }),
+);
 
-  app.use(notFoundHandler);
-  app.use(errorHandler);
+app.use(cors({ credentials: true, origin: true }));
+app.use(cookieParser());
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-  return app;
-}
+// Global rate limit: 600 req / 15 min per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 600,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+});
+
+// Tighter rate limit on auth endpoints to slow brute-force attempts
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 50,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+});
+
+app.use("/api", globalLimiter);
+app.use("/api/login", authLimiter);
+app.use("/api/logout", authLimiter);
+app.use("/api/mobile-auth", authLimiter);
+
+app.use(authMiddleware);
+
+// Mount routes at both /api and /api/v1 for versioning
+app.use("/api", router);
+app.use("/api/v1", router);
+
+export default app;

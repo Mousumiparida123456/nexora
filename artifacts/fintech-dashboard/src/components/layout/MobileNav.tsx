@@ -3,10 +3,9 @@ import { LogOut, Menu, PieChart } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BRAND, MAIN_NAV, TOOL_NAV, BOTTOM_NAV } from "@/components/layout/nav";
+import { api } from "@/lib/api";
 import { useDashboard } from "@/lib/dashboard-context";
 import { cn } from "@/lib/utils";
-
-const AUTH_STORAGE_KEY = "nexora.authenticated";
 
 function MobileNavItem({
   href,
@@ -45,7 +44,7 @@ function MobileNavItem({
 }
 
 export function MobileNav() {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const { theme } = useDashboard();
   const isDark = theme === "dark";
 
@@ -58,8 +57,7 @@ export function MobileNav() {
     [...MAIN_NAV, ...TOOL_NAV, ...BOTTOM_NAV].find((x) => isActive(x.href))?.label ?? BRAND.name;
 
   function handleLogout() {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setLocation("/login");
+    api.logout();
   }
 
   return (
