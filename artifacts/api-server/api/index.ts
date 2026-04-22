@@ -1,8 +1,6 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createApp } from "../src/app";
+import type { IncomingMessage, ServerResponse } from "http";
+import app from "../src/app";
 
-const app = createApp();
-
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  return app(req, res);
+export default function handler(req: IncomingMessage, res: ServerResponse) {
+  return (app as unknown as (req: IncomingMessage, res: ServerResponse) => unknown)(req, res);
 }

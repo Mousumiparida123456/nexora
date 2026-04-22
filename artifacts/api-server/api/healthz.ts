@@ -1,9 +1,11 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { IncomingMessage, ServerResponse } from "http";
 
-export default function handler(_req: VercelRequest, res: VercelResponse) {
-  res.status(200).json({
+export default function handler(_req: IncomingMessage, res: ServerResponse) {
+  res.statusCode = 200;
+  res.setHeader("content-type", "application/json; charset=utf-8");
+  res.end(JSON.stringify({
     status: "ok",
     service: "Nexora API",
     timestamp: new Date().toISOString(),
-  });
+  }));
 }
