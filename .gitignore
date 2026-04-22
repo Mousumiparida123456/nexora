@@ -47,5 +47,11 @@ Thumbs.db
 # Replit
 .cache/
 .local/
-artifacts/api-server/.env
-artifacts/fintech-dashboard/.env
+
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
