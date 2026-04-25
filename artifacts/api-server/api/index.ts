@@ -1,79 +1,120 @@
-import type { IncomingMessage, ServerResponse } from "http";
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-type AuthUserResponse = {
-  user: {
-    id: string;
-    email: string;
-    firstName: string | null;
-    lastName: string | null;
-    profileImageUrl: string | null;
-  } | null;
+const app = express();
+
+app.use(cookieParser());
+app.use(cors({ 
+  origin: ["https://nexora-finance-fintech-dashboard.vercel.app", "http://localhost:5173"], 
+  credentials: true 
+}));
+
+// Root route with versioning to verify deployment
+app.get("/", (req, res) => res.send("🚀 NEXORA API IS LIVE - AUTH FIX APPLIED v1"));
+
+// Health check
+app.get("/api/healthz", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    service: "Nexora API",
+    message: "Nexora API is running correctly",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Helper to parse username from cookies
+const getUsernameFromCookies = (req: express.Request) => {
+  return req.cookies?.nexora_username || null;
 };
 
-function sendJson(res: ServerResponse, statusCode: number, body: unknown) {
-  res.statusCode = statusCode;
-  res.setHeader("content-type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(body));
-}
+// Helper to check if session is active
+const isSessionActive = (req: express.Request) => {
+  return req.cookies?.nexora_session === "active";
+};
 
-function setCors(res: ServerResponse) {
-  res.setHeader("access-control-allow-origin", "*");
-  res.setHeader("access-control-allow-methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-  res.setHeader("access-control-allow-headers", "content-type, authorization");
-}
+// EXPLICIT ROUTES TO AVOID ROUTING ISSUES
+// =====================================
 
-export default function handler(req: IncomingMessage, res: ServerResponse) {
-  setCors(res);
+// Login
+const handleLogin = (req: express.Request, res: express.Response) => {
+  const returnTo = req.query.returnTo as string || "/dashboard";
+  const username = req.query.username as string;
+  const clientOrigin = "https://nexora-finance-fintech-dashboard.vercel.app";
 
-  if (req.method === "OPTIONS") {
-    res.statusCode = 204;
-    res.end();
-    return;
-  }
-
-  const url = new URL(req.url ?? "/", "http://localhost");
-  const pathname = url.pathname;
-
-  if (pathname === "/api/healthz" || pathname === "/api/v1/healthz") {
-    sendJson(res, 200, {
-      status: "ok",
-      service: "Nexora API",
-      timestamp: new Date().toISOString(),
-    });
-    return;
-  }
-
-  if ((pathname === "/api/login" || pathname === "/api/v1/login") && req.method === "GET") {
-    const returnTo = url.searchParams.get("returnTo") || "/";
-    res.statusCode = 302;
-    res.setHeader("location", returnTo);
-    res.end();
-    return;
-  }
-
-  if ((pathname === "/api/logout" || pathname === "/api/v1/logout") && req.method === "GET") {
-    res.statusCode = 302;
-    res.setHeader("location", "/login");
-    res.end();
-    return;
-  }
-
-  if ((pathname === "/api/auth/user" || pathname === "/api/v1/auth/user") && req.method === "GET") {
-    const payload: AuthUserResponse = {
-      user: {
-        id: "local-user",
-        email: "test@example.com",
-        firstName: null,
-        lastName: null,
-        profileImageUrl: null,
-      },
-    };
-    sendJson(res, 200, payload);
-    return;
-  }
-
-  sendJson(res, 404, {
-    error: "Not found",
-    path: pathname,
+  res.cookie("nexora_session", "active", {
+    maxAge: 86400000,
+    httpOnly: false,
+    secure: true,
+    sameSite: "none"
   });
-}
+
+  if (username) {
+    res.cookie("nexora_username", username, { 
+      maxAge: 86400000, 
+      httpOnly: false,
+      secure: true,
+      sameSite: "none"
+    });
+  }
+
+  const redirectUrl = returnTo.startsWith("http") 
+    ? returnTo 
+    : `${clientOrigin}${returnTo.startsWith("/") ? "" : "/"}${returnTo}`;
+  res.redirect(redirectUrl);
+};
+
+app.get("/login", handleLogin);
+app.get("/v1/login", handleLogin);
+app.get("/api/login", handleLogin);
+app.get("/api/v1/login", handleLogin);
+
+// Logout
+const handleLogout = (req: express.Request, res: express.Response) => {
+  const cookieOptions = { 
+    secure: true, 
+    sameSite: "none" as const, 
+    path: "/",
+  };
+  
+  res.clearCookie("nexora_session", cookieOptions);
+  res.clearCookie("nexora_username", cookieOptions);
+  
+  // Fallback: Also clear without options just in case
+  res.clearCookie("nexora_session");
+  res.clearCookie("nexora_username");
+  
+  const returnTo = req.query.returnTo as string || "https://nexora-finance-fintech-dashboard.vercel.app/login";
+  res.redirect(returnTo);
+};
+
+app.get("/logout", handleLogout);
+app.get("/v1/logout", handleLogout);
+app.get("/api/logout", handleLogout);
+app.get("/api/v1/logout", handleLogout);
+
+// Auth User
+const handleAuthUser = (req: express.Request, res: express.Response) => {
+  if (!isSessionActive(req)) {
+    return res.json({ user: null });
+  }
+
+  const username = getUsernameFromCookies(req);
+  res.json({
+    user: {
+      id: "user_prod_123",
+      email: username ? `${username.toLowerCase()}@example.com` : "user@example.com",
+      firstName: username || "Nexora",
+      lastName: username ? "" : "User",
+      profileImageUrl: null,
+    }
+  });
+};
+
+app.get("/auth/user", handleAuthUser);
+app.get("/v1/auth/user", handleAuthUser);
+app.get("/api/auth/user", handleAuthUser);
+app.get("/api/v1/auth/user", handleAuthUser);
+
+export default app;
+module.exports = app;
